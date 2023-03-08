@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === 'production' || isPublished) {
 		process.exit(code)
 	})
 } else {
-	exec('npm run dev', {
+	exec('npx nx @kentcdodds/workshop-app:dev', {
 		KCDSHOP_CONTEXT_CWD: process.env.KCDSHOP_CONTEXT_CWD ?? process.cwd(),
 	}).catch(code => {
 		process.exit(code)

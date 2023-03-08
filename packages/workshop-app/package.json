@@ -22,16 +22,11 @@
     "public"
   ],
   "scripts": {
-    "build": "run-p --print-label --print-name build:*",
-    "build:remix": "remix build --sourcemap",
-    "build:server": "tsx ./other/build-dir.ts server",
-    "build:utils": "tsx ./other/build-dir.ts utils",
-    "build:decs": "tsc --build ./utils/tsconfig.json",
     "dev": "cross-env NODE_ENV=development FORCE_COLOR=true run-p --print-label --print-name dev:*",
     "dev:remix": "remix watch",
     "dev:server": "tsx watch --clear-screen=false --ignore \"app/**\" --ignore \"build/**\" --ignore \"node_modules/**\" ./start.js",
     "dev:utils": "tsx --watch --no-warnings --watch-preserve-output --watch-path ./utils ./other/build-dir.ts utils",
-    "dev:decs": "npm run build:decs --silent -- --preserveWatchOutput --watch",
+    "dev:decs": "tsc --build ./utils/tsconfig.json --preserveWatchOutput --watch",
     "format": "prettier --write .",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "cross-env NODE_ENV=production node ./start.js",

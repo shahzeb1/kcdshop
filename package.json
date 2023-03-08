@@ -2,15 +2,14 @@
   "name": "kcdshop",
   "private": true,
   "scripts": {
-    "typecheck": "npm run typecheck --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "build": "npm -w @kentcdodds/workshop-app run build",
+    "typecheck": "nx run-many --target=typecheck",
+    "lint": "nx run-many --target=lint",
     "prestart": "npm run build -s",
     "go": "cross-env NODE_ENV=development KCDSHOP_CONTEXT_CWD=$PWD/packages/example tsx watch $@",
     "start": "cross-env NODE_ENV=production npm -w example run start",
     "dev": "npm -w example run start",
-    "test": "playwright test",
-    "format": "npm run format --workspaces --if-present",
+    "test": "nx run-many --target=e2e",
+    "format": "nx run-many --target=format",
     "validate": "npm-run-all --parallel --print-label --print-name --continue-on-error typecheck lint test"
   },
   "author": "Kent C. Dodds <me@kentcdodds.com> (https://kentcdodds.com/)",
@@ -21,9 +20,12 @@
     "packages/example/examples/*"
   ],
   "devDependencies": {
+    "@nrwl/linter": "^15.7.2",
+    "@nrwl/nx-cloud": "latest",
     "@playwright/test": "^1.30.0",
     "@remix-run/eslint-config": "^1.13.0",
-    "eslint-config-prettier": "^8.6.0"
+    "eslint-config-prettier": "^8.6.0",
+    "nx": "15.7.2"
   },
   "dependencies": {
     "cross-env": "^7.0.3",

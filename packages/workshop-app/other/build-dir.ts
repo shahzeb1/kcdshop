@@ -33,7 +33,7 @@ for (const file of allFiles) {
 	}
 }
 
-console.log('\nbuilding...', { entryPoints })
+console.log('\nbuilding...')
 
 esbuild
 	.build({

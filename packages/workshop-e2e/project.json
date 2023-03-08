@@ -1,0 +1,16 @@
+{
+	"name": "workshop-e2e",
+	"sourceRoot": "packages/workshop-e2e",
+	"productType": "application",
+	"implicitDependencies": ["@kentcdodds/workshop-app"],
+	"targets": {
+		"e2e": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "npx playwright test",
+				"cwd": "packages/workshop-e2e"
+			},
+			"dependsOn": [{ "projects": "dependencies", "target": "build" }]
+		}
+	}
+}

@@ -1,0 +1,34 @@
+{
+	"tasksRunnerOptions": {
+		"default": {
+			"runner": "@nrwl/nx-cloud",
+			"options": {
+				"cacheableOperations": [
+					"build",
+					"format",
+					"lint",
+					"typecheck",
+					"test",
+					"postinstall",
+					"setup:custom",
+					"e2e"
+				],
+				"accessToken": "NWMwNjczZjYtMzZjYi00MzQ5LWIwNTQtYWI2ZjI5Zjg2ZTRkfHJlYWQtd3JpdGU="
+			}
+		}
+	},
+	"targetDefaults": {
+		"build": {
+			"dependsOn": ["^build"],
+			"outputs": ["{projectRoot}/./packages/workshop-app/build"]
+		},
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"options": {
+				"lintFilePatterns": ["{projectRoot}/**/*.{js,jsx,ts,tsx}"]
+			}
+		}
+	},
+	"defaultBase": "main",
+	"defaultProject": "@kentcdodds/workshop-app"
+}
