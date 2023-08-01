@@ -53,6 +53,7 @@ function getFileCodeblocks(
 	filePathApp2: string,
 	type: string,
 ) {
+	console.log('CHUNKS', file.chunks)
 	if (!file.chunks.length) {
 		return [`No changes`]
 	}
@@ -68,25 +69,42 @@ function getFileCodeblocks(
 		const removedLineNumbers = []
 		const addedLineNumbers = []
 		const lines = []
-		const startLine =
-			chunk.type === 'Chunk'
-				? chunk.fromFileRange.start
-				: chunk.type === 'CombinedChunk'
-				? chunk.fromFileRangeA.start
-				: 1
-		const toStartLine = chunk.toFileRange.start
-		for (let lineNumber = 0; lineNumber < chunk.changes.length; lineNumber++) {
-			const change = chunk.changes[lineNumber]
-			if (!change) continue
-			lines.push(change.content)
-			switch (change.type) {
-				case 'AddedLine': {
-					addedLineNumbers.push(startLine + lineNumber)
-					break
-				}
-				case 'DeletedLine': {
-					removedLineNumbers.push(startLine + lineNumber)
-					break
+		let toStartLine = 0
+		let startLine = 1
+		if (chunk.type === 'BinaryFilesChunk') {
+			console.log(type, chunk.pathBefore, chunk.pathAfter)
+			lines.push(
+				type === 'AddedFile'
+					? `Binary file added`
+					: type === 'DeletedFile'
+					? 'Binary file deleted'
+					: 'Binary file changed',
+			)
+		} else {
+			startLine =
+				chunk.type === 'Chunk'
+					? chunk.fromFileRange.start
+					: chunk.type === 'CombinedChunk'
+					? chunk.fromFileRangeA.start
+					: 1
+			toStartLine = chunk.toFileRange.start
+			for (
+				let lineNumber = 0;
+				lineNumber < chunk.changes.length;
+				lineNumber++
+			) {
+				const change = chunk.changes[lineNumber]
+				if (!change) continue
+				lines.push(change.content)
+				switch (change.type) {
+					case 'AddedLine': {
+						addedLineNumbers.push(startLine + lineNumber)
+						break
+					}
+					case 'DeletedLine': {
+						removedLineNumbers.push(startLine + lineNumber)
+						break
+					}
 				}
 			}
 		}
