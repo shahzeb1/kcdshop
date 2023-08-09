@@ -53,7 +53,6 @@ function getFileCodeblocks(
 	filePathApp2: string,
 	type: string,
 ) {
-	console.log('CHUNKS', file.chunks)
 	if (!file.chunks.length) {
 		return [`No changes`]
 	}
@@ -72,7 +71,6 @@ function getFileCodeblocks(
 		let toStartLine = 0
 		let startLine = 1
 		if (chunk.type === 'BinaryFilesChunk') {
-			console.log(type, chunk.pathBefore, chunk.pathAfter)
 			lines.push(
 				type === 'AddedFile'
 					? `Binary file added`
@@ -325,7 +323,7 @@ export async function getDiffFilesImpl(app1: App, app2: App) {
 		RenamedFile: 'renamed',
 	}
 
-	const parsed = parseGitDiff(diffOutput)
+	const parsed = parseGitDiff(diffOutput, { noPrefix: true })
 
 	const testFiles = Array.from(
 		new Set([...getAppTestFiles(app1), ...getAppTestFiles(app2)]),
