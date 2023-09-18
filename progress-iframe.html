@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+	<head>
+		<title>My Page</title>
+	</head>
+	<body>
+		<h1>This is a video</h1>
+		<script type="module">
+			async function getProgress() {
+				const progress = [
+					'tutorials/deploy-web-applications/project-setup-and-first-deployment/signing-up-for-fly-io',
+					'tutorials/deploy-web-applications/project-setup-and-first-deployment/setting-up-docker',
+					'tutorials/deploy-web-applications/project-setup-and-first-deployment/deploying-to-fly-with-docker',
+				]
+				return progress
+			}
+
+			function reportProgress() {
+				console.log('CHILD SENDING: kcdshop:progress:pending')
+				window.parent.postMessage({ type: 'kcdshop:progress:pending' }, '*')
+				getProgress().then(
+					progress => {
+						console.log('CHILD SENDING: kcdshop:progress:resolved', progress)
+						window.parent.postMessage(
+							{ type: 'kcdshop:progress:resolved', progress },
+							'*',
+						)
+					},
+					error => {
+						console.log('CHILD SENDING: kcdshop:progress:rejected', error)
+						window.parent.postMessage(
+							{ type: 'kcdshop:progress:rejected', error },
+							'*',
+						)
+					},
+				)
+			}
+
+			window.addEventListener('message', event => {
+				if (event.data.type === 'kcdshop:parent:ready') {
+					console.log(`CHILD RECEIVED: ${event.data.type}`)
+					console.log('CHILD SENDING: kcdshop:progress:ready')
+					window.parent.postMessage({ type: 'kcdshop:progress:ready' }, '*')
+				}
+				if (event.data.type === 'kcdshop:parent:get-progress') {
+					console.log(`CHILD RECEIVED: ${event.data.type}`)
+					reportProgress()
+				}
+			})
+
+			console.log('CHILD SENDING: kcdshop:progress:ready')
+			window.parent.postMessage({ type: 'kcdshop:progress:ready' }, '*')
+		</script>
+	</body>
+</html>

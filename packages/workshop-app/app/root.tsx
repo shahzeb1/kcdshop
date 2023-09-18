@@ -34,6 +34,7 @@ import {
 } from './utils/timing.server.ts'
 import { getEnv } from './utils/env.server.ts'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
+import { ProgressTracker } from './utils/progress.tsx'
 
 export const links: LinksFunction = () => {
 	return [
@@ -167,6 +168,7 @@ export default function App() {
 			) : (
 				<Outlet />
 			)}
+			<ProgressTracker />
 		</Document>
 	)
 }
