@@ -1,4 +1,5 @@
 import * as Tabs from '@radix-ui/react-tabs'
+import * as Select from '@radix-ui/react-select'
 import type {
 	DataFunctionArgs,
 	HeadersFunction,
@@ -10,10 +11,10 @@ import {
 	Link,
 	isRouteErrorResponse,
 	useLoaderData,
-	useNavigate,
 	useRouteError,
 	useSearchParams,
 	type LinkProps,
+	useNavigate,
 } from '@remix-run/react'
 import { clsx } from 'clsx'
 import * as React from 'react'
@@ -47,7 +48,7 @@ import {
 } from '~/utils/apps.server.ts'
 import { getDiffCode, getDiffFiles } from '~/utils/diff.server.ts'
 import { Mdx } from '~/utils/mdx.tsx'
-import { cn, getErrorMessage, useAltDown } from '~/utils/misc.tsx'
+import { cn, getErrorMessage, useAltDown, useMetaDown } from '~/utils/misc.tsx'
 import {
 	isAppRunning,
 	isPortAvailable,
@@ -330,11 +331,15 @@ export const headers: HeadersFunction = ({ loaderHeaders, parentHeaders }) => {
 	return headers
 }
 
-const tabs = ENV.KCDSHOP_DEPLOYED
+const previewOptions = ENV.KCDSHOP_DEPLOYED
 	? (['diff'] as const)
 	: (['playground', 'problem', 'solution', 'tests', 'diff'] as const)
-const isValidPreview = (s: string | null): s is (typeof tabs)[number] =>
-	Boolean(s && tabs.includes(s as (typeof tabs)[number]))
+const isValidPreview = (
+	s: string | null,
+): s is (typeof previewOptions)[number] =>
+	Boolean(s && previewOptions.includes(s as (typeof previewOptions)[number]))
+
+const otherPreviewOptions = ['problem', 'solution', 'diff'] as const
 
 function withParam(
 	searchParams: URLSearchParams,
@@ -372,7 +377,7 @@ export default function ExercisePartRoute() {
 	const [searchParams] = useSearchParams()
 
 	const preview = searchParams.get('preview')
-	const activeTab = isValidPreview(preview) ? preview : tabs[0]
+	const activePreview = isValidPreview(preview) ? preview : previewOptions[0]
 	const inBrowserBrowserRef = useRef<InBrowserBrowserRef>(null)
 	const previewAppUrl = data.playground?.dev.baseUrl
 
@@ -645,22 +650,6 @@ export default function ExercisePartRoute() {
 	}, [searchParams, previewAppUrl])
 
 	const titleBits = pageTitle(data)
-	const altDown = useAltDown()
-	const navigate = useNavigate()
-
-	// when alt is held down, the diff tab should open to the full-page diff view
-	// between the problem and solution (this is more for the instructor than the student)
-	const altDiffUrl = `/diff?${new URLSearchParams({
-		app1: data.problem?.name ?? '',
-		app2: data.solution?.name ?? '',
-	})}`
-
-	function handleDiffTabClick(event: React.MouseEvent<HTMLAnchorElement>) {
-		if (event.altKey && !event.ctrlKey && !event.shiftKey && !event.metaKey) {
-			event.preventDefault()
-			navigate(altDiffUrl)
-		}
-	}
 
 	return (
 		<div className="flex flex-grow flex-col">
@@ -738,99 +727,97 @@ export default function ExercisePartRoute() {
 						/>
 					</div>
 				</div>
-				<Tabs.Root
-					className="relative col-span-1 row-span-1 flex flex-col overflow-y-auto"
-					value={activeTab}
-					// intentionally no onValueChange here because the Link will trigger the
-					// change.
-				>
-					{/* the scrollbar adds 8 pixels to the bottom of the list which looks
-					funny with the border, especially when most of the time the scrollbar
-					shouldn't show up anyway. So we hide that extra space with -8px margin-bottom */}
-					<Tabs.List className="z-20 mb-[-8px] flex-shrink-0 overflow-x-scroll scrollbar-thin scrollbar-thumb-scrollbar">
-						{tabs.map(tab => {
-							return (
+				<div className="relative col-span-1 row-span-1">
+					<Tabs.Root
+						className="flex flex-col"
+						value={activePreview}
+						// intentionally no onValueChange here because the Link will trigger the
+						// change.
+					>
+						<div className="flex justify-between">
+							<Tabs.List>
 								<Tabs.Trigger
-									key={tab}
-									value={tab}
-									hidden={
-										tab === 'tests' && data.playground?.test.type === 'none'
-									}
-									asChild
-									className={clsx(
-										'clip-path-button relative px-6 py-4 font-mono text-sm uppercase radix-state-active:z-10 radix-state-active:bg-foreground radix-state-active:text-background radix-state-active:hover:bg-foreground/80 radix-state-active:hover:text-background/80 radix-state-inactive:hover:bg-foreground/20 radix-state-inactive:hover:text-foreground/80',
-									)}
+									value="playground"
+									className="clip-path-button relative h-14 px-6 py-4 font-mono text-sm uppercase outline-none radix-state-active:z-10 radix-state-active:bg-foreground radix-state-active:text-background radix-state-active:hover:bg-foreground/80 radix-state-active:hover:text-background/80 radix-state-inactive:hover:bg-foreground/20 radix-state-inactive:hover:text-foreground/80 focus:bg-foreground/80 focus:text-background/80"
 								>
 									<Link
-										id={`${tab}-tab`}
-										className="h-14 outline-none focus:bg-foreground/80 focus:text-background/80"
 										preventScrollReset
 										prefetch="intent"
-										onClick={handleDiffTabClick}
-										to={
-											tab === 'diff' && altDown
-												? altDiffUrl
-												: `?${withParam(
-														searchParams,
-														'preview',
-														tab === 'playground' ? null : tab,
-												  )}`
-										}
+										to={`?${withParam(searchParams, 'preview', null)}`}
 									>
-										{tab}
+										playground
 									</Link>
 								</Tabs.Trigger>
-							)
-						})}
-					</Tabs.List>
-					<div className="relative z-10 flex flex-grow flex-col overflow-y-auto border-t border-border">
-						<Tabs.Content
-							value="playground"
-							className="flex flex-grow items-center justify-center radix-state-inactive:hidden"
-						>
-							<Playground
-								appInfo={data.playground}
-								problemAppName={data.problem?.name}
-								inBrowserBrowserRef={inBrowserBrowserRef}
-								allApps={data.allApps}
+								{data.playground?.test.type === 'none' ? null : (
+									<Tabs.Trigger
+										value="tests"
+										className="clip-path-button relative h-14 px-6 py-4 font-mono text-sm uppercase outline-none radix-state-active:z-10 radix-state-active:bg-foreground radix-state-active:text-background radix-state-active:hover:bg-foreground/80 radix-state-active:hover:text-background/80 radix-state-inactive:hover:bg-foreground/20 radix-state-inactive:hover:text-foreground/80 focus:bg-foreground/80 focus:text-background/80"
+									>
+										<Link
+											preventScrollReset
+											prefetch="intent"
+											to={`?${withParam(searchParams, 'preview', 'tests')}`}
+										>
+											tests
+										</Link>
+									</Tabs.Trigger>
+								)}
+							</Tabs.List>
+							<OtherPreviewsSelect
+								activePreview={activePreview}
+								problemName={data.problem?.name}
+								solutionName={data.solution?.name}
 							/>
-						</Tabs.Content>
-						<Tabs.Content
-							value="problem"
-							className="flex flex-grow items-center justify-center radix-state-inactive:hidden"
-						>
-							<Preview
-								appInfo={data.problem}
-								inBrowserBrowserRef={inBrowserBrowserRef}
-							/>
-						</Tabs.Content>
-						<Tabs.Content
-							value="solution"
-							className="flex flex-grow items-center justify-center radix-state-inactive:hidden"
-						>
-							<Preview
-								appInfo={data.solution}
-								inBrowserBrowserRef={inBrowserBrowserRef}
-							/>
-						</Tabs.Content>
-						<Tabs.Content
-							value="tests"
-							className="flex flex-grow items-start justify-center overflow-hidden radix-state-inactive:hidden"
-						>
-							<Tests
-								appInfo={data.playground}
-								problemAppName={data.problem?.name}
-								allApps={data.allApps}
-							/>
-						</Tabs.Content>
-						<Tabs.Content
-							value="diff"
-							className="flex h-full flex-grow items-start justify-center radix-state-inactive:hidden"
-						>
-							<Diff diff={data.diff} allApps={data.allApps} />
-						</Tabs.Content>
-					</div>
-				</Tabs.Root>
+						</div>
+						<div className="relative z-10 flex flex-grow flex-col overflow-y-auto border-t border-border">
+							<Tabs.Content
+								value="playground"
+								className="flex flex-grow items-center justify-center radix-state-inactive:hidden"
+							>
+								<Playground
+									appInfo={data.playground}
+									problemAppName={data.problem?.name}
+									inBrowserBrowserRef={inBrowserBrowserRef}
+									allApps={data.allApps}
+								/>
+							</Tabs.Content>
+							<Tabs.Content
+								value="problem"
+								className="flex flex-grow items-center justify-center radix-state-inactive:hidden"
+							>
+								<Preview
+									appInfo={data.problem}
+									inBrowserBrowserRef={inBrowserBrowserRef}
+								/>
+							</Tabs.Content>
+							<Tabs.Content
+								value="solution"
+								className="flex flex-grow items-center justify-center radix-state-inactive:hidden"
+							>
+								<Preview
+									appInfo={data.solution}
+									inBrowserBrowserRef={inBrowserBrowserRef}
+								/>
+							</Tabs.Content>
+							<Tabs.Content
+								value="tests"
+								className="flex flex-grow items-start justify-center overflow-hidden radix-state-inactive:hidden"
+							>
+								<Tests
+									appInfo={data.playground}
+									problemAppName={data.problem?.name}
+									allApps={data.allApps}
+								/>
+							</Tabs.Content>
+							<Tabs.Content
+								value="diff"
+								className="flex h-full flex-grow items-start justify-center radix-state-inactive:hidden"
+							>
+								<Diff diff={data.diff} allApps={data.allApps} />
+							</Tabs.Content>
+						</div>
+					</Tabs.Root>
+				</div>
 			</main>
 		</div>
 	)
@@ -1017,6 +1004,106 @@ function Tests({
 		>
 			{testUI}
 		</PlaygroundWindow>
+	)
+}
+
+function OtherPreviewsSelect({
+	activePreview,
+	problemName,
+	solutionName,
+}: {
+	activePreview: (typeof previewOptions)[number]
+	problemName?: string
+	solutionName?: string
+}) {
+	const [searchParams, setSearchParams] = useSearchParams()
+	const altDown = useAltDown()
+	const metaDown = useMetaDown()
+	const navigate = useNavigate()
+
+	// when alt is held down, the diff preview should open to the full-page diff view
+	// between the problem and solution (this is more for the instructor than the student)
+	function getOptionTo(option: (typeof otherPreviewOptions)[number]) {
+		if (option === 'diff' && altDown) {
+			return `/diff?${new URLSearchParams({
+				app1: problemName ?? '',
+				app2: solutionName ?? '',
+			})}`
+		}
+		return `?${withParam(searchParams, 'preview', option)}`
+	}
+
+	return (
+		<Select.Root
+			value={
+				otherPreviewOptions.includes(activePreview) ? activePreview : undefined
+			}
+			onValueChange={option => {
+				if (option === 'diff' && altDown) {
+					const destination = `/diff?${new URLSearchParams({
+						app1: problemName ?? '',
+						app2: solutionName ?? '',
+					})}`
+					if (metaDown) {
+						window.open(destination, '_blank')
+					} else {
+						navigate(destination)
+					}
+				} else {
+					setSearchParams(withParam(searchParams, 'preview', option).toString())
+				}
+			}}
+		>
+			<Select.Trigger asChild>
+				<button
+					className="clip-path-button relative h-14 px-6 font-mono text-sm uppercase"
+					aria-label="Other Views"
+				>
+					<span className="flex h-14 items-center gap-1 outline-none focus:bg-foreground/80 focus:text-background/80">
+						<Select.Value
+							placeholder="..."
+							className="inline-block w-40 text-ellipsis"
+						/>
+						<Select.Icon>
+							<Icon name="TriangleDownSmall" />
+						</Select.Icon>
+					</span>
+				</button>
+			</Select.Trigger>
+			<Select.Portal>
+				<Select.Content className="z-20 max-h-[50vh] bg-black p-3 text-white lg:max-h-[70vh]">
+					<Select.Viewport className="p-3">
+						<Select.Group>
+							<Select.Label className="px-5 pb-3 font-mono uppercase">
+								Other Views
+							</Select.Label>
+							{otherPreviewOptions.map(option => (
+								<Link
+									key={option}
+									id={`preview-${option}`}
+									preventScrollReset
+									// the prefetch="intent" is the entire reason we're wrapping
+									// this in a link. That way as the user is looking through the
+									// options, they get prefetching...
+									prefetch="intent"
+									to={getOptionTo(option)}
+								>
+									<Select.Item
+										value={option}
+										className="relative flex cursor-pointer select-none items-center rounded px-4 py-2 uppercase leading-none opacity-80 radix-disabled:text-red-500 radix-highlighted:opacity-100 radix-highlighted:outline-none radix-state-checked:opacity-100"
+									>
+										<Select.ItemText>{option}</Select.ItemText>
+										<Select.ItemIndicator className="absolute left-0 inline-flex w-[25px] items-center justify-center">
+											<Icon name="CheckSmall" />
+										</Select.ItemIndicator>
+									</Select.Item>
+								</Link>
+							))}
+						</Select.Group>
+					</Select.Viewport>
+				</Select.Content>
+			</Select.Portal>
+		</Select.Root>
 	)
 }
 

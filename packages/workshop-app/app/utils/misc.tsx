@@ -211,3 +211,18 @@ export function useAltDown() {
 	}, [])
 	return altDown
 }
+
+export function useMetaDown() {
+	const [metaDown, setMetaDown] = React.useState(false)
+
+	React.useEffect(() => {
+		const set = (e: KeyboardEvent) => setMetaDown(e.metaKey)
+		document.addEventListener('keydown', set)
+		document.addEventListener('keyup', set)
+		return () => {
+			document.removeEventListener('keyup', set)
+			document.removeEventListener('keydown', set)
+		}
+	}, [])
+	return metaDown
+}
