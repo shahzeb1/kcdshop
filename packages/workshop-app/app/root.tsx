@@ -5,6 +5,7 @@ import type {
 	LinksFunction,
 	MetaFunction,
 } from '@remix-run/node'
+import { ClientOnly } from 'remix-utils/client-only'
 import { json } from '@remix-run/node'
 import {
 	Links,
@@ -34,10 +35,11 @@ import {
 } from './utils/timing.server.ts'
 import { getEnv } from './utils/env.server.ts'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
-import { ProgressTracker } from './utils/progress.tsx'
+import { ProxyIframe } from './utils/proxy.client.tsx'
 
 export const links: LinksFunction = () => {
 	return [
+		{ rel: 'preconnect', href: 'https://www.epicweb.dev' },
 		{ rel: 'preload', href: '/icons.svg', as: 'image/svg+xml' },
 		{ rel: 'stylesheet', href: '/neogrotesk-font.css' },
 		{
@@ -132,7 +134,7 @@ function Document({
 	)
 }
 
-export default function App() {
+function App() {
 	const data = useLoaderData<typeof loader>()
 	const navigation = useNavigation()
 	const showSpinner = useSpinDelay(navigation.state !== 'idle', {
@@ -168,9 +170,13 @@ export default function App() {
 			) : (
 				<Outlet />
 			)}
-			<ProgressTracker />
+			<ClientOnly>{() => <ProxyIframe />}</ClientOnly>
 		</Document>
 	)
+}
+
+export default function AppWithProviders() {
+	return <App />
 }
 
 function ElementScrollRestoration({

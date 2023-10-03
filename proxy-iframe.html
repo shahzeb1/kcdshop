@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+	<head>
+		<title>My Page</title>
+	</head>
+	<body>
+		<script type="module">
+			async function makeFetch({ requestId, input, init }) {
+				console.log({ requestId, input, init })
+				await new Promise(r => setTimeout(r, 2000))
+				window.parent.postMessage({
+					type: 'kcdshop:epic-proxy:resolve',
+					requestId,
+					response: {
+						body: 'hi',
+						headers: [],
+						status: 200,
+						statusText: 'OK',
+					},
+				})
+			}
+			function postReady() {
+				console.log('CHILD SENDING: kcdshop:epic-proxy:ready')
+				window.parent.postMessage({ type: 'kcdshop:epic-proxy:ready' }, '*')
+			}
+			window.addEventListener('message', event => {
+				if (!window.parent || event.source !== window.parent.window) {
+					console.log('received message from unknown source', event)
+					return
+				}
+				if (event.data.request === 'getUri') {
+					// just something the browser does 🤷‍♂️
+					return
+				}
+				console.log(`CHILD RECEIVED: ${event.data.type}`, event)
+				switch (event.data.type) {
+					case 'kcdshop:parent:ready': {
+						postReady()
+						break
+					}
+					case 'kcdshop:parent:fetch': {
+						console.log('CHILD MAKING FETCH', event.data)
+						makeFetch(event.data)
+						break
+					}
+				}
+			})
+
+			postReady()
+		</script>
+	</body>
+</html>
