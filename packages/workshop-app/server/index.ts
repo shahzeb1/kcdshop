@@ -3,10 +3,13 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import express from 'express'
 import chokidar from 'chokidar'
+import * as cookieUtil from 'cookie'
+import * as setCookie from 'set-cookie-parser'
 import compression from 'compression'
 import morgan from 'morgan'
 import address from 'address'
 import closeWithGrace from 'close-with-grace'
+import { createProxyMiddleware } from 'http-proxy-middleware'
 import { WebSocket, WebSocketServer } from 'ws'
 import { createRequestHandler } from '@remix-run/express'
 import { type ServerBuild, broadcastDevReady } from '@remix-run/node'
@@ -79,6 +82,76 @@ if ((process.env.NODE_ENV !== 'production' && !isPublished) || isDeployed) {
 	app.use(morgan('tiny'))
 }
 
+const desiredPort = Number(process.env.PORT || 5639)
+const portToUse = await getPort({
+	port: portNumbers(desiredPort, desiredPort + 100),
+})
+const proxyPortToUse = await getPort({
+	port: portNumbers(portToUse + 1, portToUse + 100),
+})
+
+const proxyApp = express()
+proxyApp.disable('x-powered-by')
+
+let savedCookies = new Map<string, setCookie.Cookie>()
+
+function getCookieKey(cookie: setCookie.Cookie) {
+	return `${cookie.name}-${cookie.domain}-${cookie.path}`
+}
+
+function isUrl(urlString: string) {
+	try {
+		new URL(urlString)
+		return true
+	} catch {
+		return false
+	}
+}
+
+function swapUrl(urlString: string) {
+	if (!isUrl(urlString)) return urlString
+	const url = new URL(urlString)
+	if (url.hostname !== 'www.epicweb.dev') return urlString
+	url.protocol = 'http:'
+	url.port = proxyPortToUse.toString()
+	url.hostname = 'localhost'
+	for (const [name, value] of url.searchParams.entries()) {
+		url.searchParams.set(name, swapUrl(value))
+	}
+	return url.toString()
+}
+
+proxyApp.use(
+	'/',
+	createProxyMiddleware({
+		target: 'https://www.epicweb.dev',
+		changeOrigin: true,
+		logLevel: 'warn',
+		onProxyReq(proxyReq) {
+			let cookieHeader = [...savedCookies.values()]
+				.map(c => cookieUtil.serialize(c.name, c.value))
+				.join('; ')
+			proxyReq.setHeader('Cookie', cookieHeader)
+		},
+		onProxyRes(proxyRes) {
+			if (proxyRes.headers.location) {
+				proxyRes.headers.location = swapUrl(proxyRes.headers.location)
+				proxyRes.headers.location = proxyRes.headers.location.replace(
+					encodeURIComponent('https://www.epicweb.dev'),
+					encodeURIComponent(`http://localhost:${proxyPortToUse}`),
+				)
+			}
+			const setCookieHeaders = proxyRes.headers['set-cookie']
+			if (!setCookieHeaders) return
+			const parsedCookies = setCookie.parse(setCookieHeaders)
+			for (const parsedCookie of parsedCookies) {
+				savedCookies.set(getCookieKey(parsedCookie), parsedCookie)
+			}
+			delete proxyRes.headers['set-cookie']
+		},
+	}),
+)
+
 app.all(
 	'*',
 	process.env.NODE_ENV === 'development'
@@ -94,10 +167,7 @@ app.all(
 		  }),
 )
 
-const desiredPort = Number(process.env.PORT || 5639)
-const portToUse = await getPort({
-	port: portNumbers(desiredPort, desiredPort + 100),
-})
+const proxyServer = proxyApp.listen(proxyPortToUse)
 
 const server = app.listen(portToUse, () => {
 	const addy = server.address()
@@ -117,6 +187,7 @@ const server = app.listen(portToUse, () => {
 	}
 	console.log(`🐨  Let's get learning!`)
 	const localUrl = `http://localhost:${portUsed}`
+	const localProxyUrl = `http://localhost:${proxyPortToUse}`
 	let lanUrl: string | null = null
 	const localIp = address.ip()
 	// Check if the address is a private ip
@@ -129,6 +200,7 @@ const server = app.listen(portToUse, () => {
 	console.log(
 		`
 ${chalk.bold('Local:')}            ${chalk.cyan(localUrl)}
+${chalk.grey('Proxying:')}         ${chalk.cyan(localProxyUrl)}
 ${lanUrl ? `${chalk.bold('On Your Network:')}  ${chalk.cyan(lanUrl)}` : ''}
 ${chalk.bold('Press Ctrl+C to stop')}
 	`.trim(),
@@ -159,6 +231,9 @@ closeWithGrace(() => {
 	return Promise.all([
 		new Promise((resolve, reject) => {
 			server.close(e => (e ? reject(e) : resolve('ok')))
+		}),
+		new Promise((resolve, reject) => {
+			proxyServer.close(e => (e ? reject(e) : resolve('ok')))
 		}),
 		new Promise((resolve, reject) => {
 			wss.close(e => (e ? reject(e) : resolve('ok')))
