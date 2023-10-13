@@ -45,6 +45,10 @@
       "types": "./build/utils/process-manager.server.d.ts",
       "default": "./build/utils/process-manager.server.js"
     },
+    "./kcdshop-message.server": {
+      "types": "./build/utils/kcdshop-message.server.d.ts",
+      "default": "./build/utils/kcdshop-message.server.js"
+    },
     "./test": {
       "types": "./build/utils/test.d.ts",
       "default": "./build/utils/test.js"

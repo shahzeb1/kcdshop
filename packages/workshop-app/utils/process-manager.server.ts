@@ -157,6 +157,32 @@ export async function runAppDev(app: App) {
 	return { status: 'process-started', running: true } as const
 }
 
+export async function sendAppMessage(
+	app: { name: string; dev: { type: string } },
+	message: string,
+) {
+	if (isDeployed) throw new Error('cannot send messages in deployed mode')
+	const key = app.name
+
+	if (app.dev.type !== 'script') {
+		return { status: 'error', error: 'no-server' } as const
+	}
+
+	const runningApp = devProcesses.get(key)
+	if (!runningApp) {
+		return { status: 'error', error: 'no-process' } as const
+	}
+
+	await fetch(`http://localhost:${runningApp.port}/__kcdshop_message__`, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ message }),
+	}).catch(() => {
+		// ignore errors
+	})
+	return { status: 'success' } as const
+}
+
 export async function runAppTests(app: App) {
 	if (isDeployed) throw new Error('cannot run tests in deployed mode')
 	const key = app.name
@@ -273,13 +299,20 @@ export async function closeProcess(key: string) {
 	if (isDeployed) throw new Error('cannot close processes in deployed mode')
 	const proc = devProcesses.get(key)
 	if (proc) {
+		const exitedPromise = new Promise(resolve =>
+			proc.process.on('exit', resolve),
+		)
 		if (process.platform === 'win32') {
 			const { execa } = await import('execa')
 			await execa('taskkill', ['/pid', String(proc.process.pid), '/f', '/t'])
 		} else {
 			proc.process.kill()
 		}
-		await stopPort(proc.port) // 🤷‍♂️
+		await Promise.race([
+			new Promise(resolve => setTimeout(resolve, 500)),
+			exitedPromise,
+		])
+		await stopPort(proc.port) // just in case 🤷‍♂️
 		devProcesses.delete(key)
 	}
 }

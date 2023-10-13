@@ -14,6 +14,7 @@ import chalk from 'chalk'
 // @ts-ignore - this file may not exist if you haven't built yet, but it will
 // definitely exist by the time the dev or prod server actually runs.
 import * as remixBuild from '../build/index.js'
+import { handleKCDShopMessage } from '@kentcdodds/workshop-app/kcdshop-message.server'
 
 const BUILD_PATH = '../build/index.js'
 
@@ -21,6 +22,7 @@ const build = remixBuild as unknown as ServerBuild
 let devBuild = build
 
 const app = express()
+handleKCDShopMessage(app, (msg) => console.log('message received!', msg))
 
 app.use(compression())
 

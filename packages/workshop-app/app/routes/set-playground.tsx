@@ -18,8 +18,13 @@ import {
 import { getDiffCode } from '#app/utils/diff.server.ts'
 import { ensureUndeployed, getErrorMessage } from '#app/utils/misc.tsx'
 
-const setPlaygroundSchema = z.object({
+const SetPlaygroundSchema = z.object({
 	appName: z.string(),
+	reset: z
+		.string()
+		.nullable()
+		.optional()
+		.transform(v => v === 'true'),
 })
 
 export async function action({ request }: DataFunctionArgs) {
@@ -27,8 +32,9 @@ export async function action({ request }: DataFunctionArgs) {
 	const formData = await request.formData()
 	const rawData = {
 		appName: formData.get('appName'),
+		reset: formData.get('reset'),
 	}
-	const result = setPlaygroundSchema.safeParse(rawData)
+	const result = SetPlaygroundSchema.safeParse(rawData)
 	if (!result.success) {
 		return json({ status: 'error', error: result.error.message } as const, {
 			status: 400,
@@ -49,7 +55,7 @@ export async function action({ request }: DataFunctionArgs) {
 			? await getAppByName(app.problemName)
 			: undefined
 	try {
-		await setPlayground(app.fullPath)
+		await setPlayground(app.fullPath, { reset: form.reset })
 	} catch (error: unknown) {
 		return json({ status: 'error', error: getErrorMessage(error) } as const, {
 			status: 500,
@@ -65,8 +71,10 @@ export async function action({ request }: DataFunctionArgs) {
 
 export function SetPlayground({
 	appName,
+	reset = false,
 	...buttonProps
 }: {
+	reset?: boolean
 	appName: string
 } & JSX.IntrinsicElements['button']) {
 	const fetcher = useFetcher<typeof action>()
@@ -93,6 +101,7 @@ export function SetPlayground({
 			className="inline-flex items-center justify-center"
 		>
 			<input type="hidden" name="appName" value={appName} />
+			{reset ? <input type="hidden" name="reset" value="true" /> : null}
 			{showProgressBarField}
 			<button
 				type="submit"

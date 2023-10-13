@@ -100,7 +100,24 @@ ${chalk.bold('Press Ctrl+C to stop')}
 	}
 })
 
+type KCDShopMessage = { type: string; message: string }
+
+function isKCDShopMessage(obj: any): obj is KCDShopMessage {
+	return obj && typeof obj.type === 'string' && typeof obj.message === 'string'
+}
+
+function handleKCDShopMessage(msg: any) {
+	if (isKCDShopMessage(msg) && msg.type === 'kcdshop-message') {
+		console.log('Received message:', msg.message)
+	} else {
+		console.error('Unexpected message format:', msg)
+	}
+}
+
+process.on('message', handleKCDShopMessage)
+
 closeWithGrace(async () => {
+	process.removeListener('message', handleKCDShopMessage)
 	await new Promise((resolve, reject) => {
 		server.close(e => (e ? reject(e) : resolve('ok')))
 	})
