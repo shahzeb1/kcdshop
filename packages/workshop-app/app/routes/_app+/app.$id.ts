@@ -31,7 +31,19 @@ export async function loader({ request, params }: DataFunctionArgs) {
 	const htmlFile = path.join(app.fullPath, 'index.html')
 	const hasHtml = await fsExtra.pathExists(htmlFile)
 	if (hasHtml) {
-		const html = await fsExtra.readFile(htmlFile)
+		let html = (await fsExtra.readFile(htmlFile)).toString()
+		if (!html.includes('<base href')) {
+			// add base href to html
+			const baseHref = `<base href="/app/${appId}/" />`
+			if (html.includes('<head>')) {
+				html = html.replace('<head>', `<head>\n\t\t${baseHref}`)
+			} else if (html.includes('<html>')) {
+				html = html.replace(
+					'<html>',
+					`<html>\n\t<head>\n\t\t${baseHref}\n\t</head>`,
+				)
+			}
+		}
 		return new Response(html, {
 			headers: {
 				'Content-Length': Buffer.byteLength(html).toString(),

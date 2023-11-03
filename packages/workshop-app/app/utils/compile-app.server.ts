@@ -1,14 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 
-// remix using `esbuild-plugin-polyfill-node` plugin
-// this plugin report that we can not use "esbuild",
-// because esbuild require("worker_threads") which use top-level await
-// since we are using node18+ we can use top-level await in our code
-// using esbuild in a .server file solved this issue
-import * as esbuild from 'esbuild'
-
 export async function compileTs(filePath: string, fullPath: string) {
+	const esbuild = await import('esbuild')
 	return esbuild.build({
 		stdin: {
 			contents: await fs.promises.readFile(filePath, 'utf-8'),
@@ -30,4 +24,18 @@ export async function compileTs(filePath: string, fullPath: string) {
 		minify: false,
 		sourcemap: 'inline',
 	})
+}
+
+export async function compileCss(filePath: string, cwd: string) {
+	const { default: postcss } = await import('postcss')
+	const { execa } = await import('execa')
+
+	const result = await execa('postcss', [
+		filePath,
+		'--config',
+		path.join(cwd, 'postcss.config.js'),
+		'--no-map',
+	])
+
+	return result.stdout.toString()
 }

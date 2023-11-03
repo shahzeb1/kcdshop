@@ -1,6 +1,6 @@
 import { promises as dns } from 'node:dns'
-import fs from 'node:fs'
 import path from 'node:path'
+import fsExtra from 'fs-extra'
 
 export async function checkConnection() {
 	return dns.resolve('example.com').then(
@@ -14,9 +14,12 @@ export async function getPkgProp<Value>(
 	prop: string,
 	defaultValue?: Value,
 ): Promise<Value> {
-	const pkg = JSON.parse(
-		fs.readFileSync(path.join(fullPath, 'package.json')).toString(),
-	) as any
+	let pkg: any
+	try {
+		pkg = fsExtra.readJsonSync(path.join(fullPath, 'package.json'))
+	} catch (error) {
+		throw new Error(`Could not read/parse package.json of ${fullPath}`)
+	}
 	const propPath = prop.split('.')
 	let value = pkg
 	for (const p of propPath) {

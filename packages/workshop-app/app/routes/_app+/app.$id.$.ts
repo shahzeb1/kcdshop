@@ -3,7 +3,7 @@ import { redirect, type DataFunctionArgs } from '@remix-run/node'
 import fsExtra from 'fs-extra'
 import mimeTypes from 'mime-types'
 import { getAppByName } from '#app/utils/apps.server.ts'
-import { compileTs } from '#app/utils/compile-app.server.ts'
+import { compileCss, compileTs } from '#app/utils/compile-app.server.ts'
 import { getBaseUrl, invariantResponse } from '#app/utils/misc.tsx'
 
 export async function loader({ params, request }: DataFunctionArgs) {
@@ -47,14 +47,27 @@ export async function loader({ params, request }: DataFunctionArgs) {
 				'Content-Type': 'text/javascript',
 			},
 		})
-	} else {
-		const file = await fsExtra.readFile(filePath)
-		const mimeType = mimeTypes.lookup(filePath) || 'text/plain'
-		return new Response(file, {
-			headers: {
-				'Content-Length': Buffer.byteLength(file).toString(),
-				'Content-Type': mimeType,
-			},
-		})
+	} else if (filePath.endsWith('.css')) {
+		const postcssConfigPath = path.join(fileApp.fullPath, 'postcss.config.js')
+		// check for postcss config
+		const postcssConfigExists = await fsExtra.pathExists(postcssConfigPath)
+		if (postcssConfigExists) {
+			const cssContent = await compileCss(filePath, fileApp.fullPath)
+			return new Response(cssContent, {
+				headers: {
+					'Content-Length': Buffer.byteLength(cssContent).toString(),
+					'Content-Type': 'text/css',
+				},
+			})
+		}
 	}
+
+	const file = await fsExtra.readFile(filePath)
+	const mimeType = mimeTypes.lookup(filePath) || 'text/plain'
+	return new Response(file, {
+		headers: {
+			'Content-Length': Buffer.byteLength(file).toString(),
+			'Content-Type': mimeType,
+		},
+	})
 }
