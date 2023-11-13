@@ -247,7 +247,7 @@ export default function App() {
 		<div className="flex flex-col">
 			{user ? null : <EpicWebBanner />}
 			<div
-				className={cn('flex flex-grow', {
+				className={cn('flex flex-grow overflow-x-hidden', {
 					'h-[calc(100vh-112px)] sm:h-[calc(100vh-64px)]': ENV.KCDSHOP_DEPLOYED,
 					'h-[calc(100vh-64px)]': !user,
 					'h-screen': user,
@@ -257,9 +257,7 @@ export default function App() {
 					isMenuOpened={isMenuOpened}
 					onMenuOpenChange={setMenuOpened}
 				/>
-				<div
-					className={cn('h-full w-full', isMenuOpened ? 'hidden md:block' : '')}
-				>
+				<div className={cn('h-full w-[calc(100vw-58px)] flex-shrink-0')}>
 					<Outlet />
 				</div>
 			</div>
