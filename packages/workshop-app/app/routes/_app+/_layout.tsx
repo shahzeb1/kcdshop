@@ -245,20 +245,18 @@ export default function App() {
 	const [isMenuOpened, setMenuOpened] = React.useState(false)
 
 	return (
-		<div className="flex flex-col">
+		<div className="flex h-full flex-col">
 			{user ? null : <EpicWebBanner />}
-			<div
-				className={cn('flex flex-grow overflow-x-hidden', {
-					'h-[calc(100vh-112px)] sm:h-[calc(100vh-64px)]': ENV.KCDSHOP_DEPLOYED,
-					'h-[calc(100vh-64px)]': !user,
-					'h-screen': user,
-				})}
-			>
-				<Navigation
-					isMenuOpened={isMenuOpened}
-					onMenuOpenChange={setMenuOpened}
-				/>
-				<div className={cn('h-full w-[calc(100vw-58px)] flex-shrink-0')}>
+			<div className={cn('flex flex-grow overflow-x-hidden')}>
+				<div className="hidden md:block">
+					<Navigation
+						isMenuOpened={isMenuOpened}
+						onMenuOpenChange={setMenuOpened}
+					/>
+				</div>
+				<div
+					className={cn('h-full w-full flex-shrink-0 md:w-[calc(100vw-58px)]')}
+				>
 					<Outlet />
 				</div>
 			</div>
@@ -290,12 +288,11 @@ function EpicWebBanner() {
 		<div
 			className={cn(
 				'z-10 flex items-center justify-between border-b bg-gradient-to-tr from-blue-500 to-indigo-500 pl-4 text-white',
-				ENV.KCDSHOP_DEPLOYED ? 'h-[112px] md:h-[64px]' : 'h-16',
 			)}
 		>
 			<div className="flex flex-1 flex-wrap items-center gap-4">
 				<Icon name="EpicWeb" size={24} />
-				<div className="flex flex-1 flex-wrap items-center">
+				<div className="flex flex-1 flex-wrap items-center py-2">
 					<p className="mr-2">
 						Welcome to the{' '}
 						<Link
@@ -323,7 +320,7 @@ function EpicWebBanner() {
 					) : null}
 				</div>
 			</div>
-			<div className="flex h-full flex-col items-center md:flex-row">
+			<div className="flex h-full min-h-[72px] flex-col items-center md:min-h-[unset] md:flex-row">
 				<Link
 					to="https://www.epicweb.dev"
 					target="_blank"
@@ -334,7 +331,7 @@ function EpicWebBanner() {
 				</Link>
 				<Link
 					to={ENV.KCDSHOP_DEPLOYED ? 'https://www.epicweb.dev/login' : '/login'}
-					className="flex h-full items-center justify-center space-x-1.5 bg-white/20 px-5 text-sm font-semibold shadow-md transition hover:bg-white/30"
+					className="flex h-full items-center justify-center space-x-1.5 bg-white/20 px-5 text-sm font-semibold transition hover:bg-white/30"
 				>
 					<Icon name="User" size={24} />
 					<span className="drop-shadow-sm">Restore Purchase</span>
@@ -449,7 +446,7 @@ function Navigation({
 	const exNum = Number(params.exerciseNumber).toString().padStart(2, '0')
 
 	return (
-		<nav className="flex border-r border-border">
+		<nav className="flex h-full border-r border-border">
 			<motion.div
 				initial={isMenuOpened ? 'open' : 'close'}
 				variants={menuVariants}
