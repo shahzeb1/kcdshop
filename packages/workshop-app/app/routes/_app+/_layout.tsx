@@ -15,6 +15,7 @@ import {
 	type AnimationControls,
 	motion,
 	useAnimationControls,
+	useReducedMotion,
 } from 'framer-motion'
 import * as React from 'react'
 import { Icon } from '#app/components/icons.tsx'
@@ -421,10 +422,14 @@ function Navigation({
 			: null
 
 	// container
+	const reduceMotion = useReducedMotion()
 	const menuControls = useAnimationControls()
 	const menuVariants = {
-		close: { width: 56 },
-		open: { width: OPENED_MENU_WIDTH },
+		close: { width: 56, transition: { duration: reduceMotion ? 0 : 0.2 } },
+		open: {
+			width: OPENED_MENU_WIDTH,
+			transition: { duration: reduceMotion ? 0 : 0.2 },
+		},
 	}
 
 	// items
