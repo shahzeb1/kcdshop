@@ -389,7 +389,7 @@ export default function ExercisePartRoute() {
 	return (
 		<div className="flex flex-grow flex-col">
 			<main className="grid h-full flex-grow grid-cols-1 grid-rows-2 lg:grid-cols-2 lg:grid-rows-1">
-				<div className="relative col-span-1 row-span-1 flex h-full flex-col border-border lg:border-r">
+				<div className="relative col-span-1 row-span-1 flex h-full flex-col lg:border-r">
 					<h1 className="h-14 border-b pl-10 pr-5 text-sm font-medium uppercase leading-tight">
 						<div className="flex h-14 flex-wrap items-center justify-between gap-x-2 py-2">
 							<div className="flex items-center justify-start gap-x-2">
@@ -433,7 +433,7 @@ export default function ExercisePartRoute() {
 							className="h-14 border-t px-6"
 						/>
 					) : null}
-					<div className="flex h-16 justify-between border-b-4 border-t border-border lg:border-b-0">
+					<div className="flex h-16 justify-between border-b-4 border-t lg:border-b-0">
 						<div>
 							<div className="h-full">
 								<TouchedFiles />
@@ -508,7 +508,7 @@ export default function ExercisePartRoute() {
 							)
 						})}
 					</Tabs.List>
-					<div className="relative z-10 flex flex-grow flex-col overflow-y-auto border-t border-border">
+					<div className="relative z-10 flex flex-grow flex-col overflow-y-auto border-t">
 						<Tabs.Content
 							value="playground"
 							className="flex flex-grow items-center justify-center radix-state-inactive:hidden"
@@ -667,7 +667,7 @@ function PlaygroundWindow({
 	)
 	return (
 		<div className="flex h-full w-full flex-col justify-between">
-			<div className="flex h-14 flex-shrink-0 items-center justify-start gap-2 border-b border-border px-3">
+			<div className="flex h-14 flex-shrink-0 items-center justify-start gap-2 border-b px-3">
 				<div className="display-alt-up flex">
 					{problemAppName ? (
 						<SetPlayground

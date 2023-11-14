@@ -21,7 +21,7 @@ function getRelativePath(file: string, separator?: string, type?: string) {
 }
 
 const buttonClassName =
-	'border-border bg-[var(--base00)] hover:bg-foreground/20 active:bg-foreground/30 box-content block rounded border-2 px-2 py-0.5 font-mono text-xs font-semibold outline-none transition duration-300 ease-in-out'
+	'bg-[var(--base00)] hover:bg-foreground/20 active:bg-foreground/30 box-content block rounded border-2 px-2 py-0.5 font-mono text-xs font-semibold outline-none transition duration-300 ease-in-out'
 
 type DataProps = {
 	'data-buttons'?: string

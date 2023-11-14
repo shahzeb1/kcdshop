@@ -154,8 +154,8 @@ function FacePile({ isMenuOpened }: { isMenuOpened: boolean }) {
 	return (
 		<div
 			className={cn(
-				'flex w-full items-center justify-start border-t p-4 transition-[height]',
-				isMenuOpened && users.length > 4 ? 'h-28' : 'h-14',
+				'flex w-full items-center justify-start transition-[height]',
+				isMenuOpened && users.length > 4 ? 'h-28' : 'h-8',
 			)}
 			style={isMenuOpened ? { width: OPENED_MENU_WIDTH } : {}}
 		>
@@ -221,12 +221,17 @@ function FacePile({ isMenuOpened }: { isMenuOpened: boolean }) {
 									tabIndex={0}
 									aria-label={overLimitLabel}
 									className={cn(
-										'flex items-center justify-center text-ellipsis rounded-full border-2 border-gray-200 bg-gray-200 text-sm text-gray-800',
+										'flex items-center justify-center rounded-full border bg-accent text-xs text-accent-foreground',
 										isMenuOpened ? 'h-8 w-8' : 'h-6 w-6',
 									)}
 								>
-									<span className="pointer-events-none">
-										+{numberOverLimit > 10 ? '...' : numberOverLimit}
+									<span
+										className={cn(
+											'pointer-events-none overflow-hidden text-ellipsis whitespace-nowrap text-center',
+											isMenuOpened ? 'w-8' : 'w-6',
+										)}
+									>
+										{isMenuOpened ? `+${numberOverLimit}` : numberOverLimit}
 									</span>
 								</div>
 							</TooltipTrigger>
@@ -247,16 +252,24 @@ export default function App() {
 	return (
 		<div className="flex h-full flex-col">
 			{user ? null : <EpicWebBanner />}
-			<div className={cn('flex flex-grow overflow-x-hidden')}>
+			<div
+				className={cn('flex h-full flex-col md:flex-row', {
+					'overflow-y-hidden md:overflow-y-scroll': isMenuOpened,
+				})}
+			>
 				<div className="hidden md:block">
 					<Navigation
 						isMenuOpened={isMenuOpened}
-						onMenuOpenChange={setMenuOpened}
+						setMenuOpened={setMenuOpened}
 					/>
 				</div>
-				<div
-					className={cn('h-full w-full flex-shrink-0 md:w-[calc(100vw-58px)]')}
-				>
+				<div className="block md:hidden">
+					<MobileNav
+						isMenuOpened={isMenuOpened}
+						setMenuOpened={setMenuOpened}
+					/>
+				</div>
+				<div className={cn('min-h-0 w-full flex-1')}>
 					<Outlet />
 				</div>
 			</div>
@@ -359,9 +372,7 @@ function NavigationExerciseListItem({
 			className={cn(
 				// add gap of 3 to children, but using padding so the progress extends through the whole height
 				'py-[6px] first:pt-3 last:pb-3',
-				progressClassName
-					? `${progressClassName} border-border before:border-t`
-					: null,
+				progressClassName ? `${progressClassName} before:border-t` : null,
 			)}
 		>
 			<span className="ml-2">{children}</span>
@@ -382,9 +393,7 @@ function NavigationExerciseStepListItem({
 			className={cn(
 				// add gap of 3 to children, but using padding so the progress extends through the whole height
 				'py-[6px] first:pt-3 last:pb-3',
-				progressClassName
-					? `${progressClassName} border-border before:border-t`
-					: null,
+				progressClassName ? `${progressClassName} before:border-t` : null,
 			)}
 		>
 			<span className="ml-2">{children}</span>
@@ -396,10 +405,10 @@ const OPENED_MENU_WIDTH = 400
 
 function Navigation({
 	isMenuOpened,
-	onMenuOpenChange: setMenuOpened,
+	setMenuOpened,
 }: {
 	isMenuOpened: boolean
-	onMenuOpenChange: (change: boolean) => void
+	setMenuOpened: (change: boolean) => void
 }) {
 	const data = useLoaderData<typeof loader>()
 	const user = useOptionalUser()
@@ -446,7 +455,7 @@ function Navigation({
 	const exNum = Number(params.exerciseNumber).toString().padStart(2, '0')
 
 	return (
-		<nav className="flex h-full border-r border-border">
+		<nav className="flex h-full border-r">
 			<motion.div
 				initial={isMenuOpened ? 'open' : 'close'}
 				variants={menuVariants}
@@ -619,7 +628,9 @@ function Navigation({
 							</div>
 						</div>
 					)}
-					<FacePile isMenuOpened={isMenuOpened} />
+					<div className="flex min-h-[3.5rem] w-full items-center justify-center border-t p-4">
+						<FacePile isMenuOpened={isMenuOpened} />
+					</div>
 					{ENV.KCDSHOP_DEPLOYED ? null : user ? (
 						<SimpleTooltip content={isMenuOpened ? null : 'Your account'}>
 							<Link
@@ -709,7 +720,7 @@ function NavToggle({
 	const path02Controls = useAnimationControls()
 
 	return (
-		<div className="relative inline-flex h-14 w-full items-center justify-between overflow-hidden border-b border-border">
+		<div className="relative inline-flex h-14 w-full items-center justify-between overflow-hidden border-b">
 			<button
 				className="flex h-14 w-14 items-center justify-center"
 				aria-label="Open Navigation menu"
@@ -754,6 +765,396 @@ function NavToggle({
 					<Link to="/">{title}</Link>
 				</motion.p>
 			)}
+		</div>
+	)
+}
+
+function MobileNav({
+	isMenuOpened,
+	setMenuOpened,
+}: {
+	isMenuOpened: boolean
+	setMenuOpened: (value: boolean) => void
+}) {
+	const data = useLoaderData<typeof loader>()
+	const params = useParams()
+	const menuControls = useAnimationControls()
+	const menuVariants = {
+		close: { height: 34 },
+		open: { height: '100vh' },
+	}
+
+	// items
+	const listVariants = {
+		visible: {
+			opacity: 1,
+			transition: {
+				duration: 0.05,
+				when: 'beforeChildren',
+				staggerChildren: 0.03,
+			},
+		},
+		hidden: {
+			opacity: 0,
+		},
+	}
+
+	return (
+		<motion.div
+			className="z-30 overflow-hidden bg-background"
+			initial={isMenuOpened ? 'open' : 'close'}
+			variants={menuVariants}
+			animate={menuControls}
+			onKeyUp={e => {
+				if (e.key === 'Escape') setMenuOpened(false)
+			}}
+		>
+			<div className={cn('flex items-center justify-between gap-2 border-b')}>
+				<div className="flex items-center justify-start gap-2">
+					<MobileNavToggle
+						menuControls={menuControls}
+						isMenuOpened={isMenuOpened}
+						setMenuOpened={setMenuOpened}
+					/>
+					<div className="flex h-8 w-8 flex-shrink-0 items-center justify-center">
+						<ThemeSwitch />
+					</div>
+					<div>
+						<MobileFacePile isMenuOpened={false} />
+					</div>
+				</div>
+				<Link className="flex h-8 items-center justify-center px-2" to="/">
+					{data.workshopTitle}
+				</Link>
+			</div>
+			<motion.div>
+				<div className="border-b p-4">
+					<MobileFacePile isMenuOpened={true} />
+				</div>
+				<motion.div
+					className="flex flex-grow flex-col justify-between overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-scrollbar"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+				>
+					<motion.ul
+						variants={listVariants}
+						initial="hidden"
+						animate="visible"
+						className="flex flex-col"
+					>
+						{data.exercises.map(({ exerciseNumber, title, steps }) => {
+							const isActive = Number(params.exerciseNumber) === exerciseNumber
+							const showPlayground =
+								!isActive && data.playground.exerciseNumber === exerciseNumber
+							const exerciseNum = exerciseNumber.toString().padStart(2, '0')
+							return (
+								<NavigationExerciseListItem
+									key={exerciseNumber}
+									exerciseNumber={exerciseNumber}
+								>
+									<Link
+										prefetch="intent"
+										to={`/${exerciseNum}`}
+										className={clsx(
+											'relative whitespace-nowrap px-2 py-0.5 pr-3 text-2xl font-bold outline-none hover:underline focus:underline',
+											'after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
+											{ 'bg-foreground text-background': isActive },
+										)}
+									>
+										{title}
+										{showPlayground ? ' 🛝' : null}
+									</Link>
+									{isActive && (
+										<motion.ul
+											variants={listVariants}
+											initial="hidden"
+											animate="visible"
+											className="ml-4 mt-4 flex flex-col"
+										>
+											<NavigationExerciseStepListItem
+												key={exerciseNumber}
+												type="instructions"
+												exerciseNumber={exerciseNumber}
+											>
+												<Link
+													to={`/${exerciseNum}`}
+													prefetch="intent"
+													className={clsx(
+														'relative whitespace-nowrap px-2 py-0.5 pr-3 text-xl font-medium outline-none after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
+														{
+															'bg-foreground text-background':
+																isActive && !params.stepNumber,
+														},
+													)}
+												>
+													Intro
+												</Link>
+											</NavigationExerciseStepListItem>
+											{steps
+												.filter(Boolean)
+												.map(({ name, stepNumber, title }) => {
+													const isActive =
+														Number(params.stepNumber) === stepNumber
+													const step = stepNumber.toString().padStart(2, '0')
+													const isPlayground = name === data.playground.appName
+													return (
+														<NavigationExerciseStepListItem
+															key={stepNumber}
+															type="step"
+															stepNumber={stepNumber}
+															exerciseNumber={exerciseNumber}
+														>
+															<Link
+																to={`/${exerciseNum}/${step}`}
+																prefetch="intent"
+																className={clsx(
+																	'relative whitespace-nowrap px-2 py-0.5 pr-3 text-xl font-medium outline-none after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
+																	{
+																		'bg-foreground text-background': isActive,
+																	},
+																)}
+															>
+																{isPlayground
+																	? `${step}. ${title} 🛝`
+																	: `${step}. ${title}`}
+															</Link>
+														</NavigationExerciseStepListItem>
+													)
+												})}
+											<NavigationExerciseStepListItem
+												type="finished"
+												exerciseNumber={exerciseNumber}
+											>
+												<NavLink
+													to={`/${exerciseNum}/finished`}
+													prefetch="intent"
+													className={({ isActive }) =>
+														clsx(
+															'relative whitespace-nowrap px-2 py-0.5 pr-3 text-base font-medium outline-none after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""] hover:underline focus:underline',
+															{
+																'bg-foreground text-background': isActive,
+															},
+														)
+													}
+												>
+													📝 Elaboration
+												</NavLink>
+											</NavigationExerciseStepListItem>
+										</motion.ul>
+									)}
+								</NavigationExerciseListItem>
+							)
+						})}
+					</motion.ul>
+					<div className="mt-6">
+						<NavLink
+							to="/finished"
+							className={({ isActive }) =>
+								clsx(
+									'relative whitespace-nowrap text-lg font-bold outline-none hover:underline focus:underline',
+									{
+										'bg-black text-white after:absolute after:-bottom-2.5 after:-right-2.5 after:h-5 after:w-5 after:rotate-45 after:scale-75 after:bg-background after:content-[""]':
+											isActive,
+									},
+								)
+							}
+						>
+							📝 Workshop Feedback
+						</NavLink>
+					</div>
+				</motion.div>
+			</motion.div>
+		</motion.div>
+	)
+}
+
+function MobileNavToggle({
+	isMenuOpened,
+	setMenuOpened,
+	menuControls,
+}: {
+	isMenuOpened: boolean
+	setMenuOpened: (value: boolean) => void
+	menuControls: AnimationControls
+}) {
+	const path01Variants = {
+		open: { d: 'M3.06061 2.99999L21.0606 21' },
+		closed: { d: 'M0 9.5L24 9.5' },
+	}
+	const path02Variants = {
+		open: { d: 'M3.00006 21.0607L21 3.06064' },
+		moving: { d: 'M0 14.5L24 14.5' },
+		closed: { d: 'M0 14.5L15 14.5' },
+	}
+	const path01Controls = useAnimationControls()
+	const path02Controls = useAnimationControls()
+
+	return (
+		<button
+			className="flex h-8 w-8 items-center justify-center"
+			aria-label="Open Navigation menu"
+			onClick={async () => {
+				menuControls.start(isMenuOpened ? 'close' : 'open')
+				setMenuOpened(!isMenuOpened)
+				if (!isMenuOpened) {
+					await path02Controls.start(path02Variants.moving)
+					path01Controls.start(path01Variants.open)
+					path02Controls.start(path02Variants.open)
+				} else {
+					path01Controls.start(path01Variants.closed)
+					await path02Controls.start(path02Variants.moving)
+					path02Controls.start(path02Variants.closed)
+				}
+			}}
+		>
+			<svg width="18" height="18" viewBox="0 0 24 24">
+				<motion.path
+					{...path01Variants.closed}
+					animate={path01Controls}
+					transition={{ duration: 0.2 }}
+					stroke="currentColor"
+					strokeWidth={1.5}
+				/>
+				<motion.path
+					{...path02Variants.closed}
+					animate={path02Controls}
+					transition={{ duration: 0.2 }}
+					stroke="currentColor"
+					strokeWidth={1.5}
+				/>
+			</svg>
+		</button>
+	)
+}
+
+function MobileFacePile({ isMenuOpened }: { isMenuOpened: boolean }) {
+	const loggedInUser = useOptionalUser()
+	let { users } = usePresence()
+	const limit = isMenuOpened ? 17 : 0
+	const opacities = ['opacity-70', 'opacity-80', 'opacity-90', 'opacity-100']
+	const shadows = [
+		'shadow-[0_0_2px_0_rgba(0,0,0,0.3)]',
+		'shadow-[0_0_4px_0_rgba(0,0,0,0.3)]',
+		'shadow-[0_0_7px_0_rgba(0,0,0,0.3)]',
+		'shadow-[0_0_10px_0_rgba(0,0,0,0.3)]',
+	]
+	function getScoreClassNames(score: number) {
+		const opacityNumber = Math.round(score * opacities.length - 1)
+		const shadowNumber = Math.round(score * shadows.length - 1)
+		return cn(
+			'shadow-purple-700 hover:opacity-100 focus:opacity-100 dark:shadow-purple-200',
+			opacities[opacityNumber] ?? 'opacity-60',
+			shadows[shadowNumber] ?? 'shadow-none',
+			score === 1
+				? 'animate-pulse hover:animate-none focus:animate-none'
+				: null,
+		)
+	}
+	const numberOverLimit = users.length - limit
+	if (!users.length) return null
+	const tiffany =
+		isMenuOpened && users.length === 1 ? (
+			<Link
+				target="_blank"
+				rel="noopener noreferrer"
+				to="https://www.youtube.com/watch?v=w6Q3mHyzn78"
+			>
+				<img
+					alt="Tiffany Tunes"
+					className={cn(
+						'h-8 w-8 rounded-full border object-cover',
+						getScoreClassNames(1),
+					)}
+					src="https://github-production-user-asset-6210df.s3.amazonaws.com/1500684/277090714-b26e5961-4ee5-4c20-abdb-b04c1c480f2b.png"
+				/>
+			</Link>
+		) : null
+	const overLimitLabel = `${numberOverLimit}${
+		isMenuOpened ? ' more ' : ' '
+	}Epic Web Dev${numberOverLimit === 1 ? '' : 's'} working now`
+	return (
+		<div className={cn('flex w-full items-center justify-start')}>
+			<div className="flex flex-wrap items-center gap-2">
+				<TooltipProvider>
+					{users.slice(0, limit).map(({ user, score }) => {
+						const scoreClassNames = getScoreClassNames(score)
+						const locationLabel = getLocationLabel(user.location)
+						return (
+							<Tooltip key={user.id}>
+								<TooltipTrigger asChild>
+									{user.avatarUrl ? (
+										<img
+											tabIndex={0}
+											alt={user.name || 'Epic Web Dev'}
+											className={cn(
+												'h-8 w-8 rounded-full border object-cover',
+												scoreClassNames,
+											)}
+											src={user.avatarUrl}
+										/>
+									) : (
+										<div
+											tabIndex={0}
+											aria-label={user.name || 'Epic Web Dev'}
+											className={cn(
+												'flex h-8 w-8 items-center justify-center rounded-full border',
+												scoreClassNames,
+											)}
+										>
+											<Icon name="User" />
+										</div>
+									)}
+								</TooltipTrigger>
+								<TooltipContent>
+									<span className="flex flex-col items-center justify-center gap-1">
+										<span>
+											{user.name || 'An EPIC Web Dev'}{' '}
+											{locationLabel
+												? ` is working ${
+														score === 1 && loggedInUser?.id !== user.id
+															? 'with you'
+															: ''
+												  } on`
+												: null}
+										</span>
+										{locationLabel?.line1 ? (
+											<span>{locationLabel.line1}</span>
+										) : null}
+										{locationLabel?.line2 ? (
+											<span>{locationLabel.line2}</span>
+										) : null}
+									</span>
+								</TooltipContent>
+							</Tooltip>
+						)
+					})}
+					{tiffany}
+					{numberOverLimit > 0 ? (
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<div
+									tabIndex={0}
+									aria-label={overLimitLabel}
+									className={cn(
+										'flex items-center justify-center rounded-full border bg-accent text-xs text-accent-foreground',
+										isMenuOpened ? 'h-8 w-8' : 'h-6 w-6',
+									)}
+								>
+									<span
+										className={cn(
+											'pointer-events-none overflow-hidden text-ellipsis whitespace-nowrap text-center',
+											isMenuOpened ? 'w-8' : 'w-6',
+										)}
+									>
+										{isMenuOpened ? `+${numberOverLimit}` : numberOverLimit}
+									</span>
+								</div>
+							</TooltipTrigger>
+							<TooltipContent>{overLimitLabel}</TooltipContent>
+						</Tooltip>
+					) : null}
+				</TooltipProvider>
+			</div>
 		</div>
 	)
 }

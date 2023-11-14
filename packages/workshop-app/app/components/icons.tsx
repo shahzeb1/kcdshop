@@ -68,6 +68,7 @@ export type IconNames =
 	| 'FastForward'
 	| 'Discord'
 	| 'Chat'
+	| 'Nav'
 
 export function Icon({
 	title,
