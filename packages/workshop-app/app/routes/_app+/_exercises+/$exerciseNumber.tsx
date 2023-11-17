@@ -120,7 +120,7 @@ export default function ExerciseNumberRoute() {
 		<main className="flex h-full w-full max-w-5xl flex-1 flex-col md:w-3/4 md:border-r xl:w-2/3">
 			<article
 				data-restore-scroll="true"
-				className="shadow-on-scrollbox flex min-h-0 w-full flex-1 flex-col gap-12 overflow-y-scroll px-3 py-4 pt-6 scrollbar-thin scrollbar-thumb-scrollbar md:px-10 md:py-12 md:pt-16"
+				className="shadow-on-scrollbox flex min-h-0 w-full flex-1 flex-col gap-12 overflow-x-hidden overflow-y-scroll px-3 py-4 pt-6 scrollbar-thin scrollbar-thumb-scrollbar md:px-10 md:py-12 md:pt-16"
 			>
 				<div>
 					<h1 className="text-[6vw] font-extrabold leading-none">

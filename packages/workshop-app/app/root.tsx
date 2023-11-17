@@ -152,7 +152,7 @@ function Document({
 					}}
 				/>
 			</head>
-			<body className="h-screen bg-background text-foreground scrollbar-thin scrollbar-thumb-scrollbar">
+			<body className="h-screen overflow-x-hidden bg-background text-foreground scrollbar-thin scrollbar-thumb-scrollbar">
 				{children}
 				<ScrollRestoration />
 				<ElementScrollRestoration elementQuery="[data-restore-scroll='true']" />

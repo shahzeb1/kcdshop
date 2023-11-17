@@ -134,7 +134,7 @@ export default function ExerciseFinished() {
 	} = data
 
 	return (
-		<div className="flex flex-grow flex-col">
+		<div className="flex h-full flex-grow flex-col">
 			<main className="grid h-full flex-grow grid-cols-1 grid-rows-2 lg:grid-cols-2 lg:grid-rows-1">
 				<div className="relative col-span-1 row-span-1 flex h-full flex-col lg:border-r">
 					<h1 className="h-14 border-b pl-10 pr-5 text-sm font-medium uppercase leading-none">
@@ -150,7 +150,7 @@ export default function ExerciseFinished() {
 					</h1>
 
 					<article
-						className="shadow-on-scrollbox h-full w-full max-w-none flex-1 scroll-pt-6 space-y-6 overflow-y-auto p-10 pt-8 scrollbar-thin scrollbar-thumb-scrollbar"
+						className="shadow-on-scrollbox h-full w-full max-w-none flex-1 scroll-pt-6 space-y-6 overflow-y-auto overflow-x-hidden p-10 pt-8 scrollbar-thin scrollbar-thumb-scrollbar"
 						data-restore-scroll="true"
 					>
 						{data.exercise.finishedCode ? (
