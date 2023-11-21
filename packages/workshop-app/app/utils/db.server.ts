@@ -1,1 +1,1 @@
-export * from '../../utils/db.server.ts'
+export * from '@epic-web/workshop-app-utils/db.server.ts'

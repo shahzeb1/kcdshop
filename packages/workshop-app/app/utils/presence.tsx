@@ -10,9 +10,9 @@ import {
 	type User,
 	partykitRoom,
 	partykitBaseUrl,
-} from '../../utils/presence.ts'
+} from '@epic-web/workshop-app-utils/presence.ts'
 
-export * from '../../utils/presence.ts'
+export * from '@epic-web/workshop-app-utils/presence.ts'
 
 const PresenceContext = createContext<ReturnType<
 	typeof usePresenceSocket

@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import { type EmbeddedFile } from '@epic-web/workshop-app-utils/codefile-mdx.server'
 import { type DataFunctionArgs, json } from '@remix-run/node'
 import { useFetcher } from '@remix-run/react'
 import { clsx } from 'clsx'
@@ -6,7 +7,6 @@ import { z } from 'zod'
 import { showProgressBarField } from '#app/components/progress-bar.tsx'
 import { setModifiedTimesForDir } from '#app/utils/apps.server.ts'
 import { ensureUndeployed } from '#app/utils/misc.tsx'
-import { type EmbeddedFile } from '../../utils/codefile-mdx.server.ts'
 
 const cacheSchema = z.object({
 	cacheLocation: z.string(),

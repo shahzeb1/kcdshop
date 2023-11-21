@@ -1,1 +1,1 @@
-export * from '../../utils/process-manager.server.ts'
+export * from '@epic-web/workshop-app-utils/process-manager.server.ts'

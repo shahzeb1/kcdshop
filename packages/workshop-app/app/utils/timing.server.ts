@@ -1,1 +1,1 @@
-export * from '../../utils/timing.server.ts'
+export * from '@epic-web/workshop-app-utils/timing.server.ts'
