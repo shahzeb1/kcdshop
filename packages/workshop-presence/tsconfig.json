@@ -8,6 +8,7 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "resolveJsonModule": true,
+    "noUncheckedIndexedAccess": true,
     "target": "ES2022",
     "strict": true,
     "allowJs": true,
@@ -15,6 +16,7 @@
     "baseUrl": ".",
     "skipLibCheck": true,
     "declaration": true,
+    "declarationMap": true,
     "noEmit": true,
     "paths": {
       "@kentcdodds/workshop-utils/*": [

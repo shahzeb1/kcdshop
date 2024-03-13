@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postinstall": "patch-package --patch-dir other/patches",
     "typecheck": "nx typecheck",
     "lint": "nx lint",
     "build": "nx run-many --target build",
@@ -30,10 +29,11 @@
     "@types/yargs": "^17.0.32",
     "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
+    "eslint-plugin-import": "^2.29.1",
+    "globby": "^14.0.1",
     "lru-cache": "^10.0.1",
     "npm-run-all": "^4.1.5",
     "nx": "^18.0.4",
-    "patch-package": "^8.0.0",
     "prettier": "^3.0.3",
     "prettier-plugin-tailwindcss": "^0.5.7",
     "tsx": "^4.7.0",
@@ -47,7 +47,12 @@
     "@nx/linter": "^18.0.4",
     "@nx/playwright": "^18.0.4",
     "@nx/workspace": "^18.0.4",
-    "eslint-config-kentcdodds": "^21.0.0",
-    "verdaccio": "^5.0.4"
+    "@rushstack/eslint-patch": "^1.7.2",
+    "@typescript-eslint/eslint-plugin": "^7.2.0",
+    "@typescript-eslint/parser": "^7.2.0",
+    "eslint": "^8.57.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-react": "^7.34.0",
+    "eslint-plugin-react-hooks": "^4.6.0"
   }
 }

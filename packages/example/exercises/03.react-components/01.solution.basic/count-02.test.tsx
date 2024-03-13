@@ -1,6 +1,6 @@
+import { testStep, expect } from '@kentcdodds/workshop-utils/test'
 import { waitFor, within } from '@testing-library/dom'
 import { userEvent } from '@testing-library/user-event'
-import { testStep, expect } from '@kentcdodds/workshop-utils/test'
 import '.'
 
 const screen = within(document.body)

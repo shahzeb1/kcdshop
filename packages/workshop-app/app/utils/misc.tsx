@@ -10,8 +10,8 @@ import * as React from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSpinDelay } from 'spin-delay'
 import { extendTailwindMerge } from 'tailwind-merge'
-import { extendedTheme } from './extended-theme.ts'
 import { Icon } from '#app/components/icons.tsx'
+import { extendedTheme } from './extended-theme.ts'
 
 type AnchorProps = React.DetailedHTMLProps<
 	React.AnchorHTMLAttributes<HTMLAnchorElement>,

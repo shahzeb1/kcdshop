@@ -28,13 +28,6 @@ import {
 	useAnimationControls,
 } from 'framer-motion'
 import * as React from 'react'
-import {
-	useNextExerciseRoute,
-	useExerciseProgressClassName,
-	type ProgressItemSearch,
-	useProgressItemClassName,
-} from '../progress.tsx'
-import { ThemeSwitch } from '../theme/index.tsx'
 import { Icon } from '#app/components/icons.tsx'
 import {
 	SimpleTooltip,
@@ -46,6 +39,13 @@ import {
 import { useOptionalUser } from '#app/components/user.tsx'
 import { cn } from '#app/utils/misc.tsx'
 import { type User, usePresence } from '#app/utils/presence.tsx'
+import {
+	useNextExerciseRoute,
+	useExerciseProgressClassName,
+	type ProgressItemSearch,
+	useProgressItemClassName,
+} from '../progress.tsx'
+import { ThemeSwitch } from '../theme/index.tsx'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const timings = makeTimings('stepLoader')

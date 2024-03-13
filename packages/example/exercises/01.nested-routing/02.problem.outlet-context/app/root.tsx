@@ -7,8 +7,8 @@ import {
 	Scripts,
 	ScrollRestoration,
 } from '@remix-run/react'
-import tailwindStylesheetUrl from './styles/tailwind.css'
 import { KCDShop } from './kcdshop.tsx'
+import tailwindStylesheetUrl from './styles/tailwind.css'
 
 export const links: LinksFunction = () => {
 	return [{ rel: 'stylesheet', href: tailwindStylesheetUrl }]

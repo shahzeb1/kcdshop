@@ -11,11 +11,11 @@ import {
 import { clsx } from 'clsx'
 import React, { Suspense } from 'react'
 import { useSpinDelay } from 'spin-delay'
-import { Icon } from './icons.tsx'
-import { SimpleTooltip } from './ui/tooltip.tsx'
 import AccordionComponent from '#app/components/accordion.tsx'
 import { Mdx } from '#app/utils/mdx.tsx'
 import { cn } from '#app/utils/misc.tsx'
+import { Icon } from './icons.tsx'
+import { SimpleTooltip } from './ui/tooltip.tsx'
 
 type diffProp = {
 	app1?: string
